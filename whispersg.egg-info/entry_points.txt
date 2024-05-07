@@ -1,0 +1,3 @@
+[console_scripts]
+whispersg = demo.transcribe:cli
+whispersg_live = demo.live_transcribe:cli
