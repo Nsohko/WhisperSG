@@ -2,7 +2,7 @@ import os
 import warnings
 from typing import List, Union, Optional, NamedTuple
 
-from huggingface_hub import hf_hub_download
+from huggingface_hub import snapshot_download
 import ctranslate2
 import faster_whisper
 import numpy as np
@@ -18,17 +18,18 @@ DEFAULT_ASR_MODEL_FOLDER = os.path.abspath( os.path.join(os.path.dirname(__file_
 DEFAULT_ASR_MODEL_PATH = os.path.join(DEFAULT_ASR_MODEL_FOLDER, "whispersg_small.en")
 
 # Case 1: If our folder exists, but not the model
-if os.path.exists(DEFAULT_ASR_MODEL_FOLDER) and not(os.path.exists(DEFAULT_ASR_MODEL_FOLDER)):
+if os.path.exists(DEFAULT_ASR_MODEL_FOLDER) and not(os.path.exists(DEFAULT_ASR_MODEL_PATH)):
     # Then downloading it from huggingface
-    try:
-        hf_hub_download(repo_id=r"Nsohko/whispersg_small.en", cache_dir=DEFAULT_ASR_MODEL_PATH)
-    except:
+    #try:
+    print("Downloading finetuned model...")
+    snapshot_download(repo_id=r"Nsohko/whispersg_small.en", local_dir=DEFAULT_ASR_MODEL_PATH, repo_type="model")
+    #except:
         # if there are errors, resort to small.en instead
-        print(f"Error Downloading finetuned model from huggingface, defaulting to small.en")
-        DEFAULT_ASR_MODEL_PATH = "small.en"
+        #print(f"Error Downloading finetuned model from huggingface, defaulting to small.en")
+        #DEFAULT_ASR_MODEL_PATH = "small.en"
 
 # Case 2: If neither folder nor model exists:
-elif not(os.path.exists(DEFAULT_ASR_MODEL_FOLDER)) and not(os.path.exists(DEFAULT_ASR_MODEL_FOLDER)):
+elif not(os.path.exists(DEFAULT_ASR_MODEL_FOLDER)) and not(os.path.exists(DEFAULT_ASR_MODEL_PATH)):
     print(f"Default WhisperSG model not found at {DEFAULT_ASR_MODEL_PATH}, defaulting to small.en")
     DEFAULT_ASR_MODEL_PATH = "small.en"
 def find_numeral_symbol_tokens(tokenizer):

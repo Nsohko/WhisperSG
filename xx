@@ -1,5 +1,12 @@
 # whisperSG
-
+conda create --name whispersg python=3.9
+conda activate whispersg
+conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia
+conda install ffmpeg=4.2.2
+git clone https://github.com/Nsohko/whisperSG
+cd whispersg
+pip install -e .
+huggingface-cli login
 ## 0. Background
 
 This project aims to explore the creation of an Automatic Speech Recognition (ASR) tool to accurately transcribe Singaporean speakers in a variety of contexts. This will ideally also involve an ability to recognise Singlish, as well as other uniquely Singaporean / Southeast-asian terms (e.g _Nasi Lemak_ ).

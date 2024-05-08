@@ -13,7 +13,7 @@ from whispersg.asr import load_model, DEFAULT_ASR_MODEL_PATH
 from whispersg.audio import load_audio, get_recorder
 from whispersg.diarize import DiarizationPipeline, assign_word_speakers
 from whispersg.utils import (LANGUAGES, TO_LANGUAGE_CODE, DEFAULT_OUTPUT_PATH, optional_float,
-                    optional_int, str2bool)
+                    optional_int, str2bool, get_writer)
 
 
 
