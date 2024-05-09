@@ -22,8 +22,9 @@ To further enhance our product, we also explored how we could integrate it with 
 
 To achieve our goals, we have explored the development of our own localized Automatic Speech Recognition tool for transcript generation.
 
-</br>
 We also finetuned our model on Singaporean speakers to help achieve greater accuracy in day-to-day use.
+
+</br>
 <p align="center">
   <img src=https://github.com/Nsohko/WhisperSG/assets/102672238/5fad8e7d-3c78-43cd-90c7-4616407ef623/>
 </p>
@@ -53,14 +54,14 @@ We chose Whisper over the other commonly available ASR models as it has been sho
 </p>
 <p align="center"><em>
 Comparison of Whisper against its competitors </br>
-The y axis represents Word Error Rate (WER) with a lower value indicating a higher accuracy </br>
+The y axis represents Word Error Rate (WER), with a lower value indicating a higher accuracy </br>
 Column E (computer-assisted) refers to ASR followed by human verification 
 </em></p>
 </br>
 
-Whisper is also relatively lightweight and comes in a variety of sizes (tiny, base, small, medium and large). The tiny, small, base and medium sizes also come in English-only (designated by a .en at the end of the name, e.g., small.en) and multilingual versions, while large only comes in a multilingual version.
+Whisper is also relatively lightweight and comes in a variety of sizes (tiny, base, small, medium and large). The tiny, base, small and medium sizes also come in English-only (designated by a .en at the end of the name, e.g., small.en) and multilingual versions, while large only comes in a multilingual version.
 
-For this project, we chose to finetune the small English-only version of Whisper, as we found it to have a good balance of accuracy and performance even on limited hardware. This made it manageable within the scope of our project (especially in comparison to larger models like medium/large), while also being relatively accurate when used to transcribe audio (compared to smaller models like small/tiny). The comparison between model sizes is summarized [below](https://cdn.openai.com/papers/whisper.pdf).
+For this project, we chose to finetune the small English-only version of Whisper, as we found it to have a good balance of accuracy and performance even on limited hardware. This made it manageable within the scope of our project (especially in comparison to larger models like medium/large), while also being relatively accurate when used to transcribe audio (compared to smaller models like tiny/base). The comparison between model sizes is summarized [below](https://cdn.openai.com/papers/whisper.pdf).
 
 </br>
 <p align="center">
@@ -85,7 +86,7 @@ Overview of the finetuning process
 </em></p>
 </br>
 
-The raw datasets consisted of audio files (stored in the .wav format) and their corresponding transcriptions (stored as .txt files). Before we could start the finetuning process, we first had to preprocess the data into a format usable by model. This involved converting the audio files into Log-Mel Spectrograms, and formatting/cleaning any transcriptions as necessary. The datasets were also portioned into 2 subsets with 80% and 20% of the examples respectively. The larger subset was used for training, while the smaller one was used for an unseen evaluation of the model at the end of the finetuning.
+The raw datasets consisted of audio files (stored in the .wav format) and their corresponding transcriptions (stored as .txt files). Before we could start the finetuning process, we first had to preprocess the data into a format usable by model. This involved converting the audio files into Log-Mel Spectrograms, and formatting/cleaning any transcriptions as necessary. The datasets were also split into 2 subsets with 80% and 20% of the examples respectively. The larger subset was used for training, while the smaller one was used for an unseen evaluation of the model at the end of the finetuning.
 
 For the finetuning itself, we used the [Huggingface transformers](https://github.com/huggingface/transformers) sequence-to-sequence trainer, which helped streamline the entire process. In total, for our final dataset of ~800,000 unique examples, the entire finetuning process (excluding data downloading/pre-processing) took about ~105 hours for 1 epoch (75hrs training + 30 hours evaluation). 
 
@@ -99,7 +100,7 @@ Hyperparameters used for finetuning
 </br>
 
 ### 2.4. IMDA National Speech Corpus
-Our primary source of Singaporean speaker data for finetuning was the [National Speech Corpus](https://www.imda.gov.sg/how-we-can-help/national-speech-corpus), which is an open-source English Corpus provided by the Info-communications and Media Development Authority (IMDA) of Singapore. It consists of audio recording and transcriptions of Singaporean speakers speaking both formal English and Singlish in a variety of contexts. The dataset is split into 6 parts, with part 1 focusing on formal English, part 2 focusing on Singlish and parts 3 onwards focusing on conversational recordings. All audio recordings are stored as .wav files, while the transcriptions are either saved as .txt files (parts 1 & 2) or .TextGrid files (part 3 onwards
+Our primary source of Singaporean speaker data for finetuning was the [National Speech Corpus](https://www.imda.gov.sg/how-we-can-help/national-speech-corpus), which is an open-source English Corpus provided by the Info-communications and Media Development Authority (IMDA) of Singapore. It consists of audio recordings and transcriptions of Singaporean speakers speaking both formal English and Singlish in a variety of contexts. The dataset is split into 6 parts, with part 1 focusing on formal English, part 2 focusing on Singlish and parts 3 onwards focusing on conversational recordings. All audio recordings are stored as .wav files, while the transcriptions are either saved as .txt files (parts 1 & 2) or .TextGrid files (part 3 onwards
 
 </br>
 <p align="center">
@@ -110,14 +111,17 @@ Overview of the IMDA NSC
 </em></p>
 </br>
 
-For the purposes of our project, we will be using only parts 1 and 2. This is because parts 1 and 2 have non-normalised transcription (i.e., transcriptions with punctuations and capitalisation present), while part 3 onwards only has normalised transcriptions (i.e., all punctuations and capitalisation stripped). While normalised transcriptions can be used to finetune the model, this would cause the resultant model’s predicted output to be similarly normalised (as it would ‘learn’ this normalised behaviour from the dataset). This would limit the usability of the model, as it would be very hard for human users to read its output due to a lack of punctuation and capitalisation. As such, we found it much better to only finetune the model using non-normalised transcriptions retains the model’s ability to properly punctuate and capitalise text.
+For the purposes of our project, we will be using only parts 1 and 2. This is because parts 1 and 2 have non-normalised transcription (i.e., transcriptions with punctuations and capitalisation present), while part 3 onwards only has normalised transcriptions (i.e., all punctuations and capitalisation stripped). While normalised transcriptions can be used to finetune the model, this would cause the resultant model’s predicted output to be similarly normalised (as it would ‘learn’ this normalised behaviour from the dataset). This would limit the usability of the model, as it would be very hard for human users to read its output due to a lack of punctuation and capitalisation. As such, we found it much better to only finetune the model using non-normalised transcriptions to retain the model’s ability to properly punctuate and capitalise text.
 
-For each transcription in parts 1 and 2, there are 3 corresponding audio files, stored in different channel folders. All 3 of these audio files consist of the same recording, simply recorded with different devices as follows:  
+For each transcription in parts 1 and 2, there are 3 corresponding audio files, stored in different channel folders. All 3 of these audio files consist of the same recording, simply recorded with different devices as follows:
+</br>
 •	Channel 0: Headset / Professional Standing Microphone  
 •	Channel 1: Boundary Microphone (place far from speaker)  
 •	Channel 2: Mobile Phone  
 
-For part 1, I used the recordings from Channel 2 (Mobile Phone). This was to simulate real world phone calls, and train the model to accurately transcribe such conversations over the phone. As for part 2, I used the recording from Channel 0 (Headset / Professional Standing Microphone). Since part 2 was focused mainly on Singlish vocabulary, I wanted the model to ‘focus’ fully on learning these new words and adding them to its own vocabulary, hence I chose the channel with cleanest and highest audio quality. Overall, by combining channel 2 of part 1 and channel 0 of part 2, this helped improve the diversity of our audio recordings in terms of audio quality, which would make it suitable for effective finetuning.
+For part 1, I used the recordings from Channel 2 (Mobile Phone). This was to simulate real world phone calls, and train the model to accurately transcribe such conversations over the phone. 
+
+As for part 2, I used the recordings from Channel 0 (Headset / Professional Standing Microphone). Since part 2 was focused mainly on Singlish vocabulary, I wanted the model to ‘focus’ fully on learning these new words and adding them to its own vocabulary, hence I chose the channel with cleanest and highest audio quality. Overall, by combining channel 2 of part 1 and channel 0 of part 2, this helped improve the diversity of our audio recordings in terms of audio quality, which would make it suitable for effective finetuning.
 
 ### 2.5. Common Voice Dataset
 
