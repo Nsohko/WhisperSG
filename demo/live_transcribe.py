@@ -18,6 +18,7 @@ def cli():
 
     parser.add_argument("--model", default=DEFAULT_ASR_MODEL_PATH, help="Name of the Whisper model to use (e.g. tiny / tiny.en / small / etc.; If using a local model, provide the path to the model folder instead; Default is the finetuned small.en model built in this project")
     parser.add_argument("--mic_id", default=pyaudio.PyAudio().get_default_input_device_info()["index"], help="The id of the computer mic to use; Use with \"list\" to list all available mics")
+    parser.add_argument("--compute_type", default="float16", type=str, choices=["float16", "float32", "int8"], help="Compute type for computation")
     parser.add_argument("--task", type=str, default="transcribe", choices=["transcribe", "translate"], help="Whether to perform X->X speech recognition ('transcribe') or X->English translation ('translate')")
     parser.add_argument("--language", type=str, default=None, choices=sorted(LANGUAGES.keys()) + sorted([k.title() for k in TO_LANGUAGE_CODE.keys()]), help="Language spoken in the audio, specify None to perform language detection")
 
@@ -50,6 +51,8 @@ def cli():
         except:
             raise ValueError("Invalid mic id")
 
+    compute_type = args["compute_type"]
+
     task = args["task"]
     language = args["language"]
 
@@ -70,7 +73,7 @@ def cli():
         do_soft_chunk_limit = False
 
     # load model and non-blocking recorder
-    transcriber = WhisperSGPipeline(whisper_model_name= asr_model_path, task=task, language=language, alignment=False, diarization=False)
+    transcriber = WhisperSGPipeline(whisper_model_name=asr_model_path, task=task, language=language, compute_type=compute_type, alignment=False, diarization=False)
     recorder = get_recorder(file_path=None, mic_id=mic_id, wait=False, silence_threshold=silence_threshold)
 
     transcriptions = [None]
