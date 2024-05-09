@@ -114,36 +114,38 @@ Overview of the IMDA NSC
 For the purposes of our project, we will be using only parts 1 and 2. This is because parts 1 and 2 have non-normalised transcription (i.e., transcriptions with punctuations and capitalisation present), while part 3 onwards only has normalised transcriptions (i.e., all punctuations and capitalisation stripped). While normalised transcriptions can be used to finetune the model, this would cause the resultant model’s predicted output to be similarly normalised (as it would ‘learn’ this normalised behaviour from the dataset). This would limit the usability of the model, as it would be very hard for human users to read its output due to a lack of punctuation and capitalisation. As such, we found it much better to only finetune the model using non-normalised transcriptions to retain the model’s ability to properly punctuate and capitalise text.
 
 For each transcription in parts 1 and 2, there are 3 corresponding audio files, stored in different channel folders. All 3 of these audio files consist of the same recording, simply recorded with different devices as follows:
-</br>
+
 •	Channel 0: Headset / Professional Standing Microphone  
 •	Channel 1: Boundary Microphone (place far from speaker)  
 •	Channel 2: Mobile Phone  
 
 For part 1, I used the recordings from Channel 2 (Mobile Phone). This was to simulate real world phone calls, and train the model to accurately transcribe such conversations over the phone. 
 
-As for part 2, I used the recordings from Channel 0 (Headset / Professional Standing Microphone). Since part 2 was focused mainly on Singlish vocabulary, I wanted the model to ‘focus’ fully on learning these new words and adding them to its own vocabulary, hence I chose the channel with cleanest and highest audio quality. Overall, by combining channel 2 of part 1 and channel 0 of part 2, this helped improve the diversity of our audio recordings in terms of audio quality, which would make it suitable for effective finetuning.
+As for part 2, I used the recordings from Channel 0 (Headset / Professional Standing Microphone). Since part 2 was focused mainly on Singlish vocabulary, I wanted the model to ‘focus’ fully on learning these new words and adding them to its own vocabulary, hence I chose the channel with cleanest and highest audio quality. 
+
+Overall, by combining channel 2 of part 1 and channel 0 of part 2, this helped improve the diversity of our audio recordings in terms of audio quality, which would hopefully make it suitable for effective finetuning.
 
 ### 2.5. Common Voice Dataset
 
 One key issue with the IMDA NSC was its high degree of repetition, as there were certain words that appeared in an excessive number of transcriptions. For example, the word ‘Greenfield’ was used in over 130 of the transcriptions! During our testing, we found that this made the finetuned model extremely prone to overfitting.
 
-To address this, we chose to augment our dataset with the [Mozilla Common Voice 17 Dataset](https://huggingface.co/datasets/mozilla-foundation/common_voice_17_0) . We randomly sampled ~400,000 additional unique examples from the Common Voice dataset to dilute our original dataset and reduce the extent of repetition. We chose the Common Voice in particular due to its very high diversity of transcription context and audio quality.
+To address this, we chose to augment our dataset with the [Mozilla Common Voice 17 Dataset](https://huggingface.co/datasets/mozilla-foundation/common_voice_17_0) . We randomly sampled ~400,000 additional unique examples from the Common Voice dataset to dilute our original dataset and reduce the extent of repetition. We chose the Common Voice in particular due to its high diversity of transcription context and audio quality.
 
 ### 2.6. WhisperX
-To further enhance the functionality of our model, we also integrated it with WhisperX . This is an interface / wrapper for Whisper that helps pre-process incoming audio and the outgoing transcriptions during inference.It was developed by Max Bain (m-bain) [here](https://github.com/m-bain/whisperX).
+To further enhance the functionality of our model, we also integrated it with WhisperX . This is an interface / wrapper for Whisper that helps pre-process incoming audio and the outgoing transcriptions during inference. It was developed by Max Bain (m-bain) [here](https://github.com/m-bain/whisperX).
 
 WhisperX has 3 main functions:
-1.	Voice Activity Detection
-•	WhisperX cuts incoming raw audio based on periods of silence, and only sends the chunks with people speaking to be transcribed by the Whisper model.
-•	This helps reduce transcription time by reducing the total length of audio needed to be transcribed by Whisper (i.e., we avoid wasting time by making the Whisper model transcribe periods of silence).
+1.	Voice Activity Detection  
+•	WhisperX cuts incoming raw audio based on periods of silence, and only sends the chunks with people speaking to be transcribed by the Whisper model.  
+•	This helps reduce transcription time by reducing the total length of audio needed to be transcribed by Whisper (i.e., we avoid wasting time by making the Whisper model transcribe periods of silence).  
 
-2.	Timestamp alignment
-•	WhisperX includes a phenome alignment model that assigns timestamps to specific phenomes in the incoming audio.
-•	This is then aligned with transcription output of the Whisper model to provide highly accurate timestamps for the transcription, down to the word level.
+2.	Timestamp alignment  
+•	WhisperX includes a phenome alignment model that assigns timestamps to specific phenomes in the incoming audio.  
+•	This is then aligned with transcription output of the Whisper model to provide highly accurate timestamps for the transcription, down to the word level.  
 
-3.	Speaker Diarization
-•	WhisperX also includes a speaker diarization model that can identify speakers and assign speaker tags to various sections of the input audio.
-•	This is again integrated with the Whisper model to differentiate speakers and add speaker identities to the transcription.
+3.	Speaker Diarization  
+•	WhisperX also includes a speaker diarization model that can identify speakers and assign speaker tags to various sections of the input audio.  
+•	This is again integrated with the Whisper model to differentiate speakers and add speaker identities to the transcription.  
 
 </br>
 <p align="center">
@@ -155,7 +157,7 @@ A similar process occurs for diarization
 </em></p>
 </br>
 
-WhisperX was designed to work with a [faster-whisper](https://github.com/SYSTRAN/faster-whisper) backend model. This is a reimplementation of whisper that uses CTranslate2 to provide even faster transcription with lower GPU memory requirements. As such, before our model can be integrated with WhisperX, it must first be converted to use CTranslate2. Luckily, this can be done easily using the Python [CTranslate2 library](https://opennmt.net/CTranslate2/guides/transformers.html#whisper).
+WhisperX was designed to work with a [faster-whisper](https://github.com/SYSTRAN/faster-whisper) backend model. This is a reimplementation of whisper that uses CTranslate2 to provide even faster transcription with lower GPU memory requirements. As such, before our model can be integrated with WhisperX, it must first be converted using CTranslate2. Luckily, this can be done easily using the Python [CTranslate2 library](https://opennmt.net/CTranslate2/guides/transformers.html#whisper).
 
 ### 2.7. Real-Time Transcription
 
@@ -166,12 +168,10 @@ In comparison to asynchronous transcription, where the user would first need to 
 Whisper does not natively support real-time transcription, so we will likely need to explore some work-arounds to achieve this. The solution I ultimately settled on is to use multithreading to record audio in parallel with the transcription process. So essentially, there is one thread in the background that is constantly listening for audio and writing it in real-time to an internal buffer using PyAudio. On the other hand, the main thread will keep reading audio data from this buffer and send it to be transcribed by whisper. This successfully achieves pseudo real-time transcription.
 
 However, one key issue with this is that when used for longer periods of transcription, the internal buffer will keep growing in size, and the whisper model will take longer and longer to transcribe it. This would cause the lag between the speaker and the transcription to increase rapidly, defeating the point of real-time transcription.
+
 One possible solution to this is to naively clear the audio buffer every so often once it hits a certain limit. While this would work, this may cause the buffer to get cleared when the speaker is in the middle of saying a word. This would essentially cause the new buffer to start with a ‘partial’ word. Whisper may not be able to accurately transcribe this, which may cause it to hallucinate, reducing the quality of the rest of the transcription.
 
 To address this, I have implemented a simple ‘smart-clearing’ system for the buffer. Essentially, once a buffer hits a certain length (soft_chunk_limit), the thread will look for the next period of silence before it clears the buffer. This helps reduce the likelihood of clearing the buffer in the middle of a word. However, in this case, it is still crucial to have another larger size limit (hard_chunk_limit) for the buffer that clears it immediately once reached. This would ensure that that even if the thread fails to detect any silence (e.g., due to a very noisy background), the buffer would still be cleared eventually in the worst case.
-
-
-https://github.com/Nsohko/WhisperSG/assets/102672238/940e2910-0c10-463d-9e6a-5e50b7a54cd6
 
 While this does work, this is still rather simplistic, as it only uses the energy level of the audio input to detect silence. This can be enhanced further in the future using a more robust VAD system that can specifically identify gaps between sentences, rather than just any silence.
 
@@ -234,14 +234,13 @@ Furthermore, I think this model should also be explored more in a deployment set
 
 Beyond that, I think we should also explore how we could provide even greater functionality. Currently, the diarization model used for speaker identification is rather inaccurate and often makes poor predictions. This would likely be the first area that needs to be enhanced. Alternatively, we could also explore the integration of the model with a LLM to summarize transcribed conversations. We could even explore the integration of traditional audio augmentation techniques, e. g. implementing the ASR with noise cancellation capabilities to improve its usability even in noisy environments.
 
-Lastly, we should also explore how we could further enhance the real-time transcription functionality, for instance, by providing compatibility for timestamps and speaker diarization, or integrating a more robust silence detection mechanism.
+Lastly, we should also explore how we could further enhance the real-time transcription functionality, for instance, by providing compatibility with speaker diarization, or integrating a more robust silence detection mechanism.
 
 ## 6. Usage
 The main code for WhisperSG is all hosted on this repo. The finetuned model is hosted on Huggingface [here](https://huggingface.co/Nsohko/whispersg_small.en). I have tried to add comments to as much of the code as I can to help self-document it.
 
 WhisperSG is packaged as a python package using pip making it very easy to integrate with other Python projects. The code for finetuning the model is also provided inside the repo, allowing for future users to easily further finetune the model if necessary. Similarly, the code to download and pre-process parts 1, 2 and 3 of the IMDA NSC is also provided for reference.
 
-</br>
 A brief description of the project's structure:
 
 ```
@@ -249,7 +248,7 @@ A brief description of the project's structure:
 
 ./finetuning: scripts to load the IMDA dataset, preprocess it and finetune the model
 
-./models: empty directory to store downloaded finetuned whispersg model. This model will be automatcially downloaded the first time whispersg is invoked
+./models: empty directory to store the downloaded finetuned whispersg model. This model will be automatcially downloaded the first time whispersg is invoked
 
 ./output: default directory to store results during inference
 
@@ -266,18 +265,18 @@ Please see below for further details on setting up, and using WhisperSG
 
 ### 6.1. Setup
 
-Creating a new conda environment is strongly recommended due this project's large number of version-specific dependicies.
+Creating a new conda environment is strongly recommended due this project's large number of version-specific dependencies.
 
 ```
 conda create --name whispersg python=3.10`  
 conda activate whispersg
 ```
 
-Next, we shall install pytorch together with compiled CUDA binaries from conda. Ensure that the version of torch and CUDA installed is compatible with your specific device. WhisperSG has been tested using pytorch==2.3.0 and CUDA==12.1.
+Next, we shall install pytorch together with compiled CUDA binaries from conda. Ensure that the version of torch and CUDA installed is compatible with your specific device. WhisperSG has been tested using pytorch==2.3.0 and CUDA==12.1.  
 `conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia`
 
-Next install ffmpeg through conda.
-'conda install ffmpeg=4.2.2'
+Next install ffmpeg through conda.  
+`conda install ffmpeg=4.2.2`
 
 Clone into this repository, and move into it.
 ```
@@ -285,38 +284,38 @@ git clone https://github.com/Nsohko/whisperSG
 cd whispersg
 ```
 
-Install this repo as an editable package. This step may take a while.
+Install this repo as an editable package. This step may take a while.  
 `pip install -e .`
 
-Finally, login into huggingface using the following command. This will prompt you to input your huggingface token.
+Finally, login into huggingface using the following command. This will prompt you to input your huggingface token.  
 `huggingface-cli login`
 
-For finetuning, please also create a new ipykernel in the environment that can be used to run the finetuning jupyter notebook:
+For finetuning, please also create a new ipykernel in the environment that can be used to run the finetuning jupyter notebook:  
 `python -m ipykernel install --user --name gpu_env --display-name "WhisperSG (GPU)"`
 
 ### 6.2. Inference
 
 WhisperSG can be easily invoked via command line from inside the conda environment. It will automatically download the finetuned model from huggingface and use that by default. If the finetuned model is not available for whatever reason, it will default to the foundational small.en model
 
-For asynchronous transcription `./demo/transcribe.py` will be used. Please enter:
+For asynchronous transcription `./demo/transcribe.py` will be used. Please enter:  
 `whispersg`
 
-For real-time transcription, `./demo/live_transcribe.py` will be used. Please enter:
+For real-time transcription, `./demo/live_transcribe.py` will be used. Please enter:  
 `whispersg_live` 
 
 Both whispersg and whispersg_live have a large list of optional arguments to modify their behavior. Please enter `whispersg -h` and `whispersg_live -h` for the full list of arguments, and documentation on what they do.
 
-Note that translation is also supported, by passing the `--task translate` argument. However, in this case, please also change the model argument to a multilingual model (for instance, by passing `--model small`). This is because otherwise whispersg defaults to the finetuned English-only model, which does not support translation, only English transcription. It is also recommended to pass in the input language using the ‘--langauge’ argument.
+Note that translation is also supported, by passing the `--task translate` argument. However, in this case, please also change the model argument to a multilingual model (for instance, by passing `--model small`). This is because otherwise whispersg defaults to the finetuned English-only model, which does not support translation, only English transcription. It is also recommended to pass in the input language using the `--langauge` argument.
 
-So for example, to translate from Chinese to English, please enter the following command
-For asynchronous: `whispersg --model small --task translate --language Chinese`
-For real-time: `whispersg_live --model small --task translate --language Chinese`
+So for example, to translate from Chinese to English, please enter the following commands  
+For asynchronous: `whispersg --model small --task translate --language Chinese`  
+For real-time: `whispersg_live --model small --task translate --language Chinese`  
 
 If doing inference on CPU or older GPUs that do not support efficient float16 compuation, please also pass in the following argument: `--compute_type int8`
 
-For python usage, please make use of WhisperSGPipeline class stored under `/whispersg/pipeline.py`. This takes in basically the same arguments as the `whispersg` command (which runs `./demo/transcribe.py`. Using this pipeline class to perform Python inference can help streamline code. The pipeline is also used in `./demo/live_transcribe.py`
+For python usage, please make use of WhisperSGPipeline class stored under `./whispersg/pipeline.py`. This takes in essentially the same arguments as the `whispersg` command (which runs `./demo/transcribe.py`). The pipeline is also used in `./demo/live_transcribe.py`
 
-During inference, if it is observed that the model keeps 'missing out' on certain chunks of audio, this is likely an issue with the VAD being too sensitive and excessively filtering out audio. To address this, please reduce the `vad_onset` and `vad_offset` parameters. This can be done by either passing the corresponging arguments to `whispersg` or passing in the new values during the initialisation of a WhisperSGPipeline object.
+During inference, if it is observed that the model keeps 'missing out' on certain chunks of audio, this is likely an issue with the VAD being too sensitive and excessively filtering out audio. To address this, please reduce the `vad_onset` and `vad_offset` parameters. This can be done by either passing the corresponding arguments to `whispersg` or passing in the new values during the initialisation of a WhisperSGPipeline object.
 
 For more details on usage / bugs, please also see [here](https://github.com/m-bain/whisperX)
 
@@ -332,7 +331,7 @@ Next, we will need to do some early pre-processing to extract out and cut the au
 
 For parts 1 and 2, please use the `load_part1or2.py` script, while for part3 use the `load_part3.py` script. Please adjust the arguments in the args_class at the top of the scripts as necessary.
 
-These scripts will also generate two .txt files as listed below. These will be used for the next step of the pre-processing. If using another custom dataset other than the IMDA NSC, you will need to generate these two .txt files yourself in the same format.
+These scripts will generate two .txt files as listed below. These will be used for the next step of the pre-processing. If using another custom dataset other than the IMDA NSC, you will need to generate these two .txt files yourself in the same format.
 
 1. `audio_paths.txt`: Consists of pairs of unique audio IDs and the absolute file path to the corresponding audio files
 ```
@@ -356,13 +355,13 @@ During this step, some light pre-processing is also carried out on the data. In 
 
 #### 6.3.2 Finetuning
 
-As mentioned previously, the finetuning process is largely streamlined by the Huggingface transformers Sequence-to-sequence library. I have placed the jupyter notebook used for finetuning under `./finetuning/training`. Please ensure that the notebook is running on the WhisperSG (GPU) kernel created previously during setup.
+As mentioned previously, the finetuning process is largely streamlined by the Huggingface transformers Sequence-to-Sequence trainer. I have placed the jupyter notebook used for finetuning under `./finetuning/training`. Please ensure that the notebook is running on the WhisperSG (GPU) kernel created previously during setup.
 
-As with before, the paths to the local datasets & training hyperparameters can be easily modified as needed by adjusting the arguments at the top of the script in the args_class. Right now, the notebook is primarily only intended for use whe finetuning local datasets, for examples of finetuning notebooks for huggingface datasets, please see [here](https://github.com/vasistalodagala/whisper-finetune).
+As with before, the paths to the local datasets & training hyperparameters can be easily modified as needed by adjusting the arguments at the top of the script in the args_class. Right now, the notebook is primarily only intended for use when finetuning with local datasets. For examples of finetuning notebooks for huggingface datasets instead, please see [here](https://github.com/vasistalodagala/whisper-finetune).
 
-Before the actual finetuning process, the notebook first downloads the foundational Whisper model. It then further preprocesses and augments the datasets. During this data processing stage (which uses the Huggingface datasets map function), occasionaly an error along the following lines pop up: `OS Permission Denied`. This can be safely ignored, and simply rerunning the notebook cell should fix it. Also note that it is during this stage where the raw audio files are converted into spectograms. These spectograms take up an extremely large amount of space (10+ times the size of the original audional files), so please ensure that you have sufficient space on your hard drive. Other than that, most other warnings in the notebook can be usually safely ignored.
+Before the actual finetuning process, the notebook first downloads the foundational Whisper model. It then further preprocesses and augments the datasets. During this data processing stage (which uses the Huggingface datasets map function), occasionaly an error along the following lines pop up: `OS Permission Denied`. This can be safely ignored, and simply rerunning the notebook cell should fix it. Also note that it is during this stage where the raw audio files are converted into spectrograms. These spectrograms take up an extremely large amount of space (10+ times the size of the original audional files), so please ensure that you have sufficient space on your hard drive. Other than that, most other warnings in the notebook can be usually safely ignored.
 
-After completing the data preprocessing successfully, the notebook then saves the foundational whisper tokenizer in the output directory. After this it will initiate the finetuning process, during which it will save checkpoints of the finetuned model in the output directory, with a frequency based on the arguments provided earlier. Note that it appears that there is currently a bug with the huggingface trainer, where it only saves checkpoints of the finetuned model, without its tokenizer. To address this, we can simply copy the tokenizer files that were earlier to the root output directory into the model's folder. This is safe as the finetuning process does not modify the tokenizer. 
+After completing the data preprocessing successfully, the notebook then saves the foundational whisper tokenizer in the output directory. After this, it will then initiate the finetuning process, during which it will save checkpoints of the finetuned model in the output directory, with a frequency based on the arguments provided earlier. Note that it appears that there is currently a bug with the huggingface trainer, where it only saves checkpoints of the finetuned model, without its tokenizer. To address this, we can simply copy the tokenizer files that were saved earlier to the root output directory into the model checkpoint's folder. This is safe as the finetuning process does not modify the tokenizer. 
 
 </br>
 <p align="center">
@@ -373,7 +372,7 @@ Sample screenshot of output directory root
 </em></p>
 </br>
 
-As shown in the image above, please copy the tokenizer files (added_tokens.json, merges.txt, normalizer.json, special_tokens_map.json, tokenizer_config.json, vocab.json) from the root of the output directory into the checkpoint folder. DO NOT copy pre_processor_config.json (unless it is also missing), as the trainer should have already created one inside the checkpoint folder. Similarly, do not copy any other file that would overwrite a file of the same name inside the checkpoint folder.
+As shown in the image above, please copy the tokenizer files (`added_tokens.json, merges.txt, normalizer.json, special_tokens_map.json, tokenizer_config.json, vocab.json`) from the root of the output directory into the checkpoint folder. DO NOT copy `pre_processor_config.json` (unless it is also missing), as the trainer should have already created one inside the checkpoint folder. Similarly, do not copy any other file that would overwrite a file of the same name inside the checkpoint folder.
 
 At the end, the checkpoint folder should have the following files:
 
@@ -390,8 +389,8 @@ Final checkpoint folder
 
 After finetuning our model, there are a few more steps we need to do before we can integrate it with WhisperX and the rest of WhisperSG. This is because, as mentioned previously, WhisperX expects a faster-whisper backend model, so we will first need to convert our model using CTranslate2.
 
-This can be done easily using the following command from within the WhisperSG conda environment. Please replace the path/to/finetuned/checkpoint and path/to/output/dir as necessary:
-`ct2-transformers-converter --model path/to/finetuned/checkpoint --output_dir path/to/output/dir'
+This can be done easily using the following command from within the WhisperSG conda environment. Please replace the path/to/finetuned/checkpoint and path/to/output/dir as necessary:  
+`ct2-transformers-converter --model path/to/finetuned/checkpoint --output_dir path/to/output/dir`
 
 After that, the path to the resulting model can be provided under the `--model` argument for WhisperSG
 
