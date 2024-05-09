@@ -304,7 +304,45 @@ For python usage, please make use of WhisperSGPipeline class stored under `/whis
 
 During inference, if it is observed that the model keeps 'missing out' on certain chunks of audio, this is likely an issue with the VAD being too sensitive and excessively filtering out audio. To address this, please reduce the `vad_onset` and `vad_offset` parameters. This can be done by either passing the corresponging arguments to `whispersg` or passing in the new values during the initialisation of a WhisperSGPipeline object.
 
+For more details on usage / bugs, please also see [here](https://github.com/m-bain/whisperX)
+
 ### 6.3. Finetuning
+
+#### 6.3.1 Downloading the dataset
+
+The IMDA dataset is stored on dropbox, as such you will likely need a dropbox premium account to access it. Dropbox currently has a 30 day free trial available. You must then also download the Dropbox desktop app.
+
+After requesting access to the IMDA NSC [here](https://docs.google.com/forms/d/e/1FAIpQLSd3k8wFF4GQP4yo_lDAXKjCltfYk-dE-yYpegTnCB20kr7log/viewform), you should be able to access it from the dropbox after a few days. From there, I strongly recommend choosing the parts you require, and making them available offline.
+
+Next, we will need to do some early pre-processing to extract out and cut the audio files, and lightly format the transcriptions as needed. I have provided scripts to do this for parts 1,2 and 3 under /finetuning/data_preprocessing/
+
+For parts 1 and 2, please use the 'load_part1or2.py' script, while for part3 use the 'load_part3.py' script. Please adjust the arguments in the args_class at the top of the scripts as necessary.
+
+These scripts will also generate two .txt files as listed below. These will be used for the next step of the pre-processing. If using another custom dataset other than the IMDA NSC, you will need to generate these two .txt files yourself in the same format.
+
+1. audio_paths.txt: Consists of pairs of unique audio IDs and the absolute file path to the corresponding audio files
+```
+<unique_id>   <absolute path to the audio file-1>
+<unique_id>   <absolute path to the audio file-2>
+...
+<unique_id>   <absolute path to the audio file-N>
+```
+
+2. text.txt: Contains the transcriptions corresponding to each of the audio files mentioned in audio_paths.txt. The transcriptions should be indexed by its corresponding audio file’s unique audio ID, as stored in audio_paths.txt. The order of IDs in audio_paths.txt and text.txt should also be consistent
+```
+<unique_id>   <Transcription (ground truth) corresponding to the audio file-1>
+<unique_id>   <Transcription (ground truth) corresponding to the audio file21>
+...
+<unique_id>   <Transcription (ground truth) corresponding to the audio file-N>
+```
+
+After obtaining these two .txt files, we will next need to save the datasets as .arrow chunks.These can be done using the finalize_data.py script, also located in /finetuning/data_preprocessing/ . Again please pass in the required arguments at the top of the script in the args_class. This script is a modfied version from [here](https://github.com/vasistalodagala/whisper-finetune). More details can be found there, including sample examples of how the .txt files should be formatted.
+
+During this step, some light pre-processing is also carried out on the data. In particular, it removes all duplicate examples (keeping only 1 randomly chosen sample), and removes extra transcriptions that do not have any corresponding audio_file.
+
+#### 6.3.2 Finetuning
+
+#### 6.3.3 Integration
 
 
 
