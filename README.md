@@ -280,8 +280,8 @@ Next install ffmpeg through conda.
 
 Clone into this repository, and move into it.
 ```
-git clone https://github.com/Nsohko/whisperSG
-cd whispersg
+git clone https://github.com/Nsohko/WhisperSG
+cd WhisperSG
 ```
 
 Install this repo as an editable package. This step may take a while.  
