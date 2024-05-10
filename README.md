@@ -195,8 +195,6 @@ Finetuned Whisper’s performance across various computational devices
 </em></p>
 </br>
 
-The first two rows correspond to the GPU and CPU of the DSTA development notebook respectively, while the next two rows correspond to the GPU and CPU of another pc with weaker specs.
-
 As seen, when running on a GPU, the model performs extremely well. For both transcription alone, and transcription + alignment + diarization, the inference is relatively fast on both GPUs.
 
 However, when tested on CPUs instead, the model performs much poorer, requiring much longer time than the GPUs. For transcription alone, the time taken is still somewhat reasonable, however for transcription + alignment + diarization, the process takes extremely long, especially on the older CPU.
@@ -319,6 +317,8 @@ If doing inference on CPU or older GPUs that do not support efficient float16 co
 For python usage, please make use of WhisperSGPipeline class stored under `./whispersg/pipeline.py`. This takes in essentially the same arguments as the `whispersg` command (which runs `./demo/transcribe.py`). The pipeline is also used in `./demo/live_transcribe.py`
 
 During inference, if it is observed that the model keeps 'missing out' on certain chunks of audio, this is likely an issue with the VAD being too sensitive and excessively filtering out audio. To address this, please reduce the `vad_onset` and `vad_offset` parameters. This can be done by either passing the corresponding arguments to `whispersg` or passing in the new values during the initialisation of a WhisperSGPipeline object.
+
+Another note is that when doing inference on a laptop, please ensure the laptop is plugged in and charging for optimal performance, to ensure the GPU and CPU are not throttled.
 
 For more details on usage / bugs, please also see [here](https://github.com/m-bain/whisperX)
 
