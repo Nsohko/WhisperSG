@@ -268,7 +268,7 @@ Please see below for further details on setting up, and using WhisperSG
 Creating a new conda environment is strongly recommended due this project's large number of version-specific dependencies.
 
 ```
-conda create --name whispersg python=3.10`  
+conda create --name whispersg python=3.10  
 conda activate whispersg
 ```
 
