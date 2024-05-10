@@ -297,10 +297,13 @@ For finetuning, please also create a new ipykernel in the environment that can b
 
 WhisperSG can be easily invoked via command line from inside the conda environment. It will automatically download the finetuned model from huggingface and use that by default. If the finetuned model is not available for whatever reason, it will default to the foundational small.en model
 
-For asynchronous transcription `./demo/transcribe.py` will be used. Please enter:  
+For asynchronous transcription `./demo/transcribe.py` will be used. To transcribe an audio file, please enter:  
+`whispersg path/to/audio/file`  
+
+To transcribe asynchronously from the mic instead, leave the path/to/audio/file empty, i.e., simply enter:  
 `whispersg`
 
-For real-time transcription, `./demo/live_transcribe.py` will be used. Please enter:  
+For real-time transcription, `./demo/live_transcribe.py` will be used. This only supports audio from the mic. Please enter:  
 `whispersg_live` 
 
 Both whispersg and whispersg_live have a large list of optional arguments to modify their behavior. Please enter `whispersg -h` and `whispersg_live -h` for the full list of arguments, and documentation on what they do.
